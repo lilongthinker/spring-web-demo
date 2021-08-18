@@ -23,5 +23,9 @@ public class DemoApplication {
 		int  coreCnt = Runtime.getRuntime().availableProcessors();
 		return "core count  [" + coreCnt+"]。 from Runtime.getRuntime().availableProcessors()";
 	}
+        @GetMapping(value = "/")
+        public String cpuCount() {
+                return "/hello/lilong<br/> /cpu/count";
+        }
 
 }
