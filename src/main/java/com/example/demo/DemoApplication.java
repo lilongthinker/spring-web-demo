@@ -18,6 +18,15 @@ public class DemoApplication {
     public String block(@PathVariable String toWho) {
         return "hello to [" + toWho+"]";
     }
+	@GetMapping(value = "/cpu/count")
+	public String cpuCount() {
+		int  coreCnt = Runtime.getRuntime().availableProcessors();
+		return "core count  [" + coreCnt+"]。 from Runtime.getRuntime().availableProcessors()";
+	}
+        @GetMapping(value = "/")
+        public String cpuCount() {
+                return "/hello/lilong<br/> /cpu/count";
+        }
 
 	@GetMapping(value = "/cpu/count")
 	public String cpuCount() {
