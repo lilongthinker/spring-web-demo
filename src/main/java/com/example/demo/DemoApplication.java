@@ -27,7 +27,7 @@ public class DemoApplication {
 
 
 	@GetMapping(value = "/slow/{latency}")
-	public String slowLatency(Long latency) {
+	public String slowLatency(@PathVariable Long latency) {
 		try {
 			Thread.sleep(latency);
 		} catch (InterruptedException e) {
