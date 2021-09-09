@@ -25,4 +25,14 @@ public class DemoApplication {
 		return "core count  [" + coreCnt+"]。 from Runtime.getRuntime().availableProcessors()";
 	}
 
+	@GetMapping(value = "/slow/{latency}")
+	public String slowLatency(Long latency) {
+		try {
+			Thread.sleep(latency);
+		} catch (InterruptedException e) {
+			System.out.println("interrupted by something" + e.getStackTrace());
+		}
+		return "slow latency after ["+latency+"] mills.";
+	}
+
 }
