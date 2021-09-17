@@ -19,7 +19,7 @@ import java.util.Map;
 @Slf4j
 public class DemoApplication {
 
-	@Value("${env}")
+	@Value("${env:terway}")
 	private String env = "app_default";
 
 	public static void main(String[] args) {
