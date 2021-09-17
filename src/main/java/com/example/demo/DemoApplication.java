@@ -68,7 +68,7 @@ public class DemoApplication {
 	@RequestMapping("/leak")
 	public String leak(){
 		long current = System.nanoTime();
-		Byte[] value = new Byte[1024*8*2];
+		Byte[] value = new Byte[1024*1024*8*2];
 		leakData.put(current, value);
 		log.info("leaking");
 		return "leak once";
