@@ -101,7 +101,7 @@ public class DemoApplication {
 
 	@GetMapping(value = "/ip")
 	public String ip(HttpServletRequest request) {
-		return "pod ip: ["+getLinuxLocalIp()+"] <br/> client ip: ["+getRemoteIp()+"]";
+		return "pod ip: ["+getLinuxLocalIp()+"] <br/> client ip: ["+getRemoteIp(request)+"]";
 	}
 
 
