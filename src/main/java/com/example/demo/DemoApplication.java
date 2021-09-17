@@ -10,6 +10,10 @@ import org.springframework.web.bind.annotation.*;
 import com.google.common.base.Joiner;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,11 +52,61 @@ public class DemoApplication {
 		return "slow latency after ["+latency+"] mills.";
 	}
 
+
+	private static String getLinuxLocalIp()  {
+		String ip = "";
+		try {
+			for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+				NetworkInterface intf = en.nextElement();
+				String name = intf.getName();
+				if (!name.contains("docker") && !name.contains("lo")) {
+					for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+						InetAddress inetAddress = enumIpAddr.nextElement();
+						if (!inetAddress.isLoopbackAddress()) {
+							String ipaddress = inetAddress.getHostAddress().toString();
+							if (!ipaddress.contains("::") && !ipaddress.contains("0:0:")
+									&& !ipaddress.contains("fe80")) {
+								ip = ipaddress;
+							}
+						}
+					}
+				}
+			}
+		} catch (SocketException ex) {
+			ip = "127.0.0.1";
+		}
+		return ip;
+	}
+
+	private String getRemoteIp(HttpServletRequest request){
+		public static String getRemoteIp(HttpServletRequest request) {
+			String ip = request.getHeader("x-forwarded-for");
+			if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+				ip = request.getHeader("Proxy-Client-IP");
+			}
+			if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+				ip = request.getHeader("WL-Proxy-Client-IP");
+			}
+			if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+				ip = request.getRemoteAddr();
+			}
+			final String[] arr = ip.split(",");
+			for (final String str : arr) {
+				if (!"unknown".equalsIgnoreCase(str)) {
+					ip = str;
+					break;
+				}
+			}
+			return ip;
+		}
+	}
+
 	@GetMapping(value = "/ip")
 	public String ip(HttpServletRequest request) {
-
-		return "pod ip: [] <br/> client ip: []";
+		return "pod ip: ["+getLinuxLocalIp()+"] <br/> client ip: ["+getRemoteIp()+"]";
 	}
+
+
 
 	@RequestMapping("/headers")
 	public String headers(@RequestHeader HttpHeaders headers){
