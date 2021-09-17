@@ -1,14 +1,26 @@
 package com.example.demo;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.bind.annotation.*;
+
+import com.google.common.base.Joiner;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @SpringBootApplication
+@Slf4j
 public class DemoApplication {
+
+	@Value("${env}")
+	private String env = "app_default";
 
 	public static void main(String[] args) {
 		SpringApplication.run(DemoApplication.class, args);
@@ -34,6 +46,62 @@ public class DemoApplication {
 			System.out.println("interrupted by something" + e.getStackTrace());
 		}
 		return "slow latency after ["+latency+"] mills.";
+	}
+
+	@GetMapping(value = "/ip")
+	public String ip(HttpServletRequest request) {
+
+		return "pod ip: [] <br/> client ip: []";
+	}
+
+	@RequestMapping("/headers")
+	public String headers(@RequestHeader HttpHeaders headers){
+		StringBuilder sbuilder = new StringBuilder();
+		for(Map.Entry<String, List<String>> entry : headers.entrySet()){
+			sbuilder.append(entry.getKey()).append(":").append( Joiner.on(",").join(entry.getValue())).append("---------------\n<br/>");
+		}
+		return sbuilder.toString();
+	}
+
+	private Map<Long, Byte[]> leakData = new HashMap<>();
+
+	@RequestMapping("/leak")
+	public String leak(){
+		long current = System.nanoTime();
+		Byte[] value = new Byte[1024*8*2];
+		leakData.put(current, value);
+		log.info("leaking");
+		return "leak once";
+	}
+
+	@RequestMapping("/")
+	public String index(){
+//        //no 生产环境禁止systemout
+//        System.out.println("hello. log to stdout");
+		//打印日志到文件,同时到标准输出
+		log.info("hello.log to file. info");
+
+		//设计异常信息,方便在arms里观察
+		Long now = System.currentTimeMillis();
+		if(now%10 == 0){
+			throw new RuntimeException("10 nanos exception. this is by designed");
+		}
+		log.info("greeting from spring cloud. message in env:"+env);
+		return "greeting from spring cloud. message in env:"+env+"\n";
+	}
+
+	@RequestMapping("/readiness/check")
+	public String readinessCheck(){
+		String msg = "readiness check it success!\n";
+		log.info(msg);
+		return msg;
+	}
+
+	@RequestMapping("/liveness/check")
+	public String livenessCheck(){
+		String msg = "liveness check it success!\n";
+		log.info(msg);
+		return msg;
 	}
 
 }
