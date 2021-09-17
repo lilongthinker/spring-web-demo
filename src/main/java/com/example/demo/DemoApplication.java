@@ -105,6 +105,15 @@ public class DemoApplication {
 	}
 
 
+	@Value("${podName:unknown_pod_name}")
+	private String podName = "";
+
+	@GetMapping(value = "/pod/name")
+	public String podName() {
+		return "pod name: ["+podName+"]";
+	}
+
+
 
 	@RequestMapping("/headers")
 	public String headers(@RequestHeader HttpHeaders headers){
